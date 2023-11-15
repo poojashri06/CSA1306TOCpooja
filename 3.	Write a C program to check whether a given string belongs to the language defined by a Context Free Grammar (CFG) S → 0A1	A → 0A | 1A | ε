@@ -1,0 +1,77 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+// Function to parse S
+bool parseS(char *input);
+
+// Function to parse A
+bool parseA(char *input);
+
+// Function to consume '0'
+bool consume0(char *input);
+
+// Function to consume '1'
+bool consume1(char *input);
+
+int main() {
+    char input[100];
+
+    // Input string from the user
+    printf("Enter a string: ");
+    scanf("%s", input);
+
+    // Check if the input string belongs to the language
+    if (parseS(input)) {
+        printf("Accepted: The string belongs to the language.\n");
+    } else {
+        printf("Rejected: The string does not belong to the language.\n");
+    }
+
+    return 0;
+}
+
+bool parseS(char *input) {
+    if (*input == '0') {
+        // Consume '0'
+        input++;
+        // Try to parse A
+        if (parseA(input)) {
+            // Try to consume '1'
+            return consume1(input);
+        }
+    }
+    return false;
+}
+
+bool parseA(char *input) {
+    if (*input == '0') {
+        // Consume '0' and recursively parse A
+        return consume0(input++) && parseA(input);
+    } else if (*input == '1') {
+        // Consume '1' and recursively parse A
+        return consume1(input++) && parseA(input);
+    } else {
+        // A can also derive ε, so it's a valid case
+        return true;
+    }
+}
+
+bool consume0(char *input) {
+    if (*input == '0') {
+        // Consume '0'
+        input++;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool consume1(char *input) {
+    if (*input == '1') {
+        // Consume '1'
+        input++;
+        return true;
+    } else {
+        return false;
+    }
+}
