@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+// DFA transition function
+int transition(int state, char input) {
+    if (state == 0 && input == 'a') {
+        return 1;  // Move to state 1 when 'a' is encountered at the beginning
+    } else if (state == 1 && input != 'a') {
+        return 2;  // Move to state 2 for any character other than 'a'
+    } else {
+        return 2;  // Stay in state 2 for any input after the first 'a'
+    }
+}
+
+// DFA simulation function
+bool simulateDFA(char *input) {
+    int state = 0;  // Initial state is 0
+
+    for (int i = 0; input[i] != '\0'; i++) {
+        state = transition(state, input[i]);
+    }
+
+    // Accept if the final state is 1 (started with 'a' and ended with 'a')
+    return state == 1;
+}
+
+int main() {
+    char input[100];
+
+    // Input string from the user
+    printf("Enter a string: ");
+    scanf("%s", input);
+
+    // Simulate the DFA and check if the string is accepted
+    if (simulateDFA(input)) {
+        printf("Accepted: The string starts with 'a' and ends with 'a'.\n");
+    } else {
+        printf("Rejected: The string does not satisfy the given language.\n");
+    }
+
+    return 0;
+}
