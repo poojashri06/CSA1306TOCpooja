@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+#define MAX_STATES 10
+#define MAX_TRANSITIONS 2
+
+// Function to simulate the NFA
+bool simulateNFA(char *input, int nfa[MAX_STATES][MAX_TRANSITIONS][2], int numStates);
+
+// Function to perform epsilon closure
+void epsilonClosure(int nfa[MAX_STATES][MAX_TRANSITIONS][2], int currentState, bool visited[MAX_STATES], int numStates);
+
+int main() {
+    int numStates;
+
+    // Input the number of states
+    printf("Enter the number of states in the NFA: ");
+    scanf("%d", &numStates);
+
+    int nfa[MAX_STATES][MAX_TRANSITIONS][2];
+
+    // Input the NFA transitions
+    printf("Enter the NFA transitions (use -1 to denote no transition):\n");
+    for (int i = 0; i < numStates; i++) {
+        for (int j = 0; j < MAX_TRANSITIONS; j++) {
+            printf("Transitions from state %d on input %d (use -1 to end): ", i, j);
+            scanf("%d", &nfa[i][j][0]);
+            if (nfa[i][j][0] == -1) {
+                break;
+            }
+            printf("Transitions from state %d on epsilon (use -1 to end): ", i);
+            scanf("%d", &nfa[i][j][1]);
+            if (nfa[i][j][1] == -1) {
+                break;
+            }
+        }
+    }
+
+    char input[100];
+
+    // Input string from the user
+    printf("Enter a string: ");
+    scanf("%s", input);
+
+    // Simulate the NFA and check if the string is accepted
+    if (simulateNFA(input, nfa, numStates)) {
+        printf("Accepted: The string starts with 'o' and ends with '1'.\n");
+    } else {
+        printf("Rejected: The string does not satisfy the given language.\n");
+    }
+
+    return 0;
+}
+
+bool simulateNFA(char *input, int nfa[MAX_STATES][MAX_TRANSITIONS][2], int numStates) {
+    bool visited[MAX_STATES];
+    memset(visited, false, sizeof(visited));
+
+    // Start simulation from the initial state(s)
+    epsilonClosure(nfa, 0, visited, numStates);
+
+    // Process each character in the input
+    for (int i = 0; input[i] != '\0'; i++) {
+        char symbol = input[i];
+        bool nextVisited[MAX_STATES];
+        memset(nextVisited, false, sizeof(nextVisited));
+
+        // Check epsilon closure for each current state
+        for (int currentState = 0; currentState < numStates; currentState++) {
+            if (visited[currentState]) {
+                epsilonClosure(nfa, currentState, nextVisited, numStates);
+
+                // Process transitions on the input symbol
+                for (int j = 0; j < MAX_TRANSITIONS; j++) {
+                    int nextState = nfa[currentState][j][0];
+                    if (nfa[currentState][j][1] == -1 && symbol == 'o' && nextState != -1) {
+                        nextVisited[nextState] = true;
+                    }
+                }
+            }
+        }
+
+        // Update the visited array for the next iteration
+        memcpy(visited, nextVisited, sizeof(visited));
+    }
+
+    // Check if any of the final states is reached
+    for (int currentState = 0; currentState < numStates; currentState++) {
+        if (visited[currentState]) {
+            for (int j = 0; j < MAX_TRANSITIONS; j++) {
+                int nextState = nfa[currentState][j][0];
+                if (nfa[currentState][j][1] == -1 && input[strlen(input) - 1] == '1' && nextState != -1) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+void epsilonClosure(int nfa[MAX_STATES][MAX_TRANSITIONS][2], int currentState, bool visited[MAX_STATES], int numStates) {
+    if (!visited[currentState]) {
+        visited[currentState] = true;
+        int nextState = nfa[currentState][0][1];
+        if (nextState != -1) {
+            epsilonClosure(nfa, nextState, visited, numStates);
+        }
+    }
+}
